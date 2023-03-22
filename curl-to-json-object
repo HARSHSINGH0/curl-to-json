@@ -1,4 +1,3 @@
-//function name curltojsonobject("your curl command")
 (function () {
 	function r(e, n, t) {
 		function o(i, f) {
@@ -3299,7 +3298,7 @@
 					const argvs = require("yargs-parser")(curl_request);
 
 					const json = {
-						header: {},
+						headers: {},
 						method: "GET",
 					};
 
@@ -3339,7 +3338,7 @@
 
 					const parseData = (data) => {
 						let jsonObj = {};
-						json.header["Content-Type"] = "application/json";
+						json.headers["Content-Type"] = "application/json";
 
 						if (Array.isArray(data)) {
 							if (isJson(data[0])) {
@@ -3370,7 +3369,7 @@
 
 					const parseDataUrlEncode = (data) => {
 						let jsonUrlEncoded = "";
-						json.header["Content-Type"] = "application/x-www-form-urlencoded";
+						json.headers["Content-Type"] = "application/x-www-form-urlencoded";
 
 						if (Array.isArray(data)) {
 							data.forEach((item, index) => {
@@ -3395,23 +3394,39 @@
 										item = removeQuotes(item);
 
 										if (stringIsUrl(item)) {
-											json.url = item;
+											json.raw_url = item;
+											const url = new URL(json.raw_url);
+											const cleanUrl = url.origin + url.pathname;
+											json.url = cleanUrl;
+
+											// Check if the raw URL has any queries
+											if (json.raw_url.includes("?")) {
+												// Extract the query string from the URL
+												queryString = json.raw_url.split("?")[1];
+
+												// Split the query string into individual query parameters
+												queryParams = queryString.split("&");
+
+												json.queries = {};
+												// Loop through each query parameter and add it to the queries object
+												for (let i = 0; i < queryParams.length; i++) {
+													const queryParam = queryParams[i].split("=");
+													const paramName = queryParam[0];
+													const paramValue = queryParam[1];
+													json.queries[paramName] = paramValue;
+												}
+											}
 										}
 									});
 								}
-								break;
-
-							case "X":
-							case "request":
-								json.method = argvs[argv];
 								break;
 
 							case "H":
 							case "header":
 								{
 									const parsedHeader = parseHeader(argvs[argv]);
-									json.header = {
-										...json.header,
+									json.headers = {
+										...json.headers,
 										...parsedHeader,
 									};
 									if (parsedHeader.Cookie) {
@@ -3423,12 +3438,14 @@
 
 							case "u":
 							case "user":
-								json.header["Authorization"] = argvs[argv];
+								// json.headers["Authorization"] = argvs[argv];
+								[username, password] = argvs[argv].split(":");
+								json.auth = { user: username, pass: password };
 								break;
 
 							case "A":
 							case "user-agent":
-								json.header["user-agent"] = argvs[argv];
+								json.headers["user-agent"] = argvs[argv];
 								break;
 
 							case "I":
@@ -3438,31 +3455,81 @@
 
 							case "b":
 							case "cookie":
-								json.header["Set-Cookie"] = argvs[argv];
+								json.headers["Set-Cookie"] = argvs[argv];
 								break;
 
 							case "d":
+							case "data-ascii":
 							case "data":
 							case "data-raw":
-							case "data-ascii":
-								const str = parseData(argvs[argv]);
+								str = parseData(argvs[argv]);
 
-								const params = new URLSearchParams(str);
+								params = new URLSearchParams(str);
+								// json.data = Object.fromEntries(params.entries());
+								// break;
+								if (!httpMethodSpecified) {
+									json.method = "POST";
+								}
+
+								// str = parseData(argvs[argv]);
+								// params = new URLSearchParams(str);
+								json.data = Object.fromEntries(params.entries()); // Parse command-line arguments into a URLSearchParams object
+								// const params = new URLSearchParams(parseData(argvs[argv]));
+
+								// // Check if tags exist and convert them into an array
+								if (json.data.tags) {
+									json.data.tags = str.tags;
+								}
+
+								// // Check if metadata exists and parse it into an object
+								if (json.data.metadata) {
+									json.data.metadata = str.metadata;
+								}
+
+								// // Check if options exists and parse it into an object
+								if (json.data.options) {
+									json.data.options = str.options;
+								}
+
+								break;
+							case "data-urlencode":
+								if (!httpMethodSpecified) {
+									json.method = "POST";
+								}
+								// json.data = parseDataUrlEncode(argvs[argv]);
+								str = parseData(argvs[argv]);
+								params = new URLSearchParams(str);
 								json.data = Object.fromEntries(params.entries());
 								break;
-
-							case "data-urlencode":
-								json.data = parseDataUrlEncode(argvs[argv]);
+							case "json":
+								if (!httpMethodSpecified) {
+									json.method = "POST";
+								}
+								str = parseData(argvs[argv]);
+								params = new URLSearchParams(str);
+								json.data = Object.fromEntries(params.entries());
 								break;
-
 							case "compressed":
-								if (!json.header["Accept-Encoding"]) {
-									json.header["Accept-Encoding"] =
+								if (!json.headers["Accept-Encoding"]) {
+									json.headers["Accept-Encoding"] =
 										argvs[argv] || "deflate, gzip";
 								}
 								json.compressed = true;
 								break;
-
+							case "X":
+							case "request":
+								var httpMethodSpecified = true;
+								json.method = argvs[argv];
+								break;
+							case "ntlm":
+								json.auth_type = "ntlm";
+							case "cert":
+								json.auth_type = "cert";
+								json.auth = { cert: "", key: "" };
+								json.auth.cert = argvs.cert;
+								json.auth.key = argvs.key;
+							case "digest":
+								json.auth_type = "digest";
 							default:
 								break;
 						}
