@@ -1,3 +1,4 @@
+//function name curltojsonobject("your curl command")
 (function () {
 	function r(e, n, t) {
 		function o(i, f) {
