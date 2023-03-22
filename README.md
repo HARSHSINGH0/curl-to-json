@@ -1,8 +1,8 @@
 ## Curl to Json
 
-**curl-to-json** converts **curl** requests to **JSON** requests
-**Easy to use inside Frontend, no Backend support needed (Nodejs NPM packages)**
-**No Dependencies**
+###**curl-to-json** converts **curl** requests to **JSON** requests
+###**Easy to use inside Frontend, no Backend support needed (Nodejs NPM packages)**
+###**No Dependencies**
 
 ### Example
 
