@@ -42,7 +42,7 @@
     -d '{"name": "Harsh", "email": "harshsinghzero@gmail.com", "message": "Hello I am Harsh"}' \
     https://github.com/HARSHSINGH0";
     
-		console.log(curltojsonobject(curlCommand));
+    console.log(curltojsonobject(curlCommand));
     
     </script>
 
