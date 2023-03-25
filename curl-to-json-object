@@ -3395,9 +3395,8 @@
 										if (
 											typeof item == "string" &&
 											item.includes(".com") &&
-											!item.match(
-												/^((http|https|ftp|ftps|sftp|ssh|scp|smb|file|s3|ws):\/\/.*)$/
-											)
+											!item.match(/^((http|https|ftp|ftps|sftp|ssh|scp|smb|file|s3|ws):\/\/.*)$/)
+
 										) {
 											item = "http://" + item;
 										}
