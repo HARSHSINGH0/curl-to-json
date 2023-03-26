@@ -1,8 +1,14 @@
 ## Curl to Json
 
+## NEW UPDATE Added Multiple support to TAGS
+
 ##### **curl-to-json** converts **curl** requests to **JSON** requests
+
 ##### **Easy to use inside Frontend, no Backend support needed (Nodejs NPM packages)**
-##### **No Dependencies**
+
+##### **Also Support For NPM (easy include using require("curl-to-json-convert"))**
+
+##### **No Dependencies if Used Directly from Frontend(download from github)**
 
 ### Example
 
